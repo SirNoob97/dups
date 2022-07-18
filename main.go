@@ -22,6 +22,8 @@ func isIgnored(dir string) bool {
 	return false
 }
 
+// TODO: refactor this function, this function should only read a directory tree
+// TODO: extract hash operations
 func readTree(directory string) (md5Table, error) {
 	table := make(md5Table)
 	walk := func(path string, fInfo os.DirEntry, err error) error {
