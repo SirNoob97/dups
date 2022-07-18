@@ -47,8 +47,8 @@ func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *
 	table, err := readTree(TEST_DATA)
 
 	if len(table) == 0 && err != nil {
-		t.Fatal("Expected a non empty Map")
-		t.Fatalf("Expected 'nil' got %s", err)
+		t.Error("Expected a non empty Map")
+		t.Errorf("Expected 'nil' got %v", err)
 	}
 }
 
@@ -57,8 +57,8 @@ func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
 	table, err := readTree("")
 
 	if len(table) > 0 && err == nil {
-		t.Fatalf("Expected an empty Map got with len of %d", len(table))
-		t.Fatal("Expected a non 'nil' error")
+		t.Errorf("Expected an empty Map got with len of %d", len(table))
+		t.Error("Expected a non 'nil' error")
 	}
 }
 
