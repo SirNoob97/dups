@@ -79,3 +79,31 @@ func Test_GetHash_TwoNonZeroLengthString_WhenFileIsAnEmptyFile(t *testing.T) {
 		t.Fatal("Expected two string with non zero length")
 	}
 }
+
+// Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile ...
+func Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile(t *testing.T) {
+	hash, _ := getHash(EMPTY_FILE_PATH)
+
+	if hash != EMPTY_FILE_MD5_HASH {
+		t.Fatalf("Expected %s md5 hash, got %s", EMPTY_FILE_MD5_HASH, hash)
+	}
+}
+
+// Test_GetHash_LogErrors_WhenPathIsAnEmptyString ...
+func Test_GetHash_LogErrors_WhenPathIsAnEmptyString(t *testing.T) {
+	origLogFatal := logFatal
+	defer func() {
+		logFatal = origLogFatal
+	}()
+
+	errors := []any{}
+	logFatal = func(a ...any) {
+		errors = append(errors, a)
+	}
+
+	getHash("")
+
+	if len(errors) == 0 {
+		t.Fatal("Expected errors to be logged")
+	}
+}
