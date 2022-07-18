@@ -1,7 +1,7 @@
-.PHONY clean test
+.PHONY: clean test
 
 clean:
 	@rm -rf bin/
 
-test:
+test: clean
 	@./test.sh
