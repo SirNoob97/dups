@@ -48,6 +48,7 @@ func readTree(directory string) (md5Table, error) {
 	return table, filepath.WalkDir(directory, walk)
 }
 
+// TODO: implement a better error handling
 func getHash(path string) (string, string) {
 	file, err := os.Open(path)
 	if err != nil {
