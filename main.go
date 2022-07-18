@@ -9,7 +9,10 @@ import (
 	"path/filepath"
 )
 
-var ignore = []string{".git"}
+var (
+	logFatal = log.Fatal
+	ignore   = []string{".git"}
+)
 
 type md5Table map[string][]string
 
@@ -48,13 +51,13 @@ func readTree(directory string) (md5Table, error) {
 func getHash(path string) (string, string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		logFatal(err)
 	}
 	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		log.Fatal(err)
+		logFatal(err)
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), path
@@ -75,7 +78,7 @@ func showOutput(hashTable md5Table) {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("Missing required parameter: '<path>'")
+		logFatal("Missing required parameter: '<path>'")
 	}
 
 	hashes, err := readTree(os.Args[1])
