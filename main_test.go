@@ -62,8 +62,17 @@ func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
 	}
 }
 
-// Test_GetHash_TowNonZeroLenString_WhenFileExists ...
-func Test_GetHash_TowNonZeroLenString_WhenFileExists(t *testing.T) {
+// Test_GetHash_TowNonZeroLengthString_WhenFileExists ...
+func Test_GetHash_TowNonZeroLengthString_WhenFileExists(t *testing.T) {
+	hash, path := getHash(TEST_DATA + "/test_1")
+
+	if len(hash) == 0 && len(path) == 0 {
+		t.Fatal("Expected two string with non zero length")
+	}
+}
+
+// Test_GetHash_TwoNonZeroLengthString_WhenFileIsAnEmptyFile ...
+func Test_GetHash_TwoNonZeroLengthString_WhenFileIsAnEmptyFile(t *testing.T) {
 	hash, path := getHash(EMPTY_FILE_PATH)
 
 	if len(hash) == 0 && len(path) == 0 {
