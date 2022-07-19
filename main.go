@@ -14,6 +14,10 @@ var (
 	ignore   = []string{".git"}
 )
 
+type pair struct {
+	hash string
+	file string
+}
 type md5Table map[string][]string
 
 func isIgnored(dir string) bool {
@@ -45,20 +49,23 @@ func readTree(directory string) ([]string, error) {
 	return files, filepath.WalkDir(directory, walk)
 }
 
-// TODO: implement a better error handling
-func getHash(path string) (string, string) {
+func getHash(path string) (pair, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		logFatal(err)
+		return pair{}, err
 	}
 	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		logFatal(err)
+		return pair{}, err
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil)), path
+	ret := pair{
+		hash: fmt.Sprintf("%x", hash.Sum(nil)),
+		file: path,
+	}
+	return ret, nil
 }
 
 func showOutput(hashTable md5Table) {
@@ -86,8 +93,12 @@ func main() {
 
 	hashTable := make(md5Table)
 	for _, f := range files {
-		hash, file := getHash(f)
-		hashTable[hash] = append(hashTable[hash], file)
+		pair, err := getHash(f)
+		if err != nil {
+			logFatal(err)
+		}
+
+		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
 	}
 
 	if len(hashTable) == 0 {
