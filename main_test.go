@@ -112,10 +112,16 @@ func Test_GetHash_LogErrors_WhenPathIsAnEmptyString(t *testing.T) {
 
 // Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound ...
 func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
-	table, err := readTree(TEST_DATA)
-
+	files, err := readTree(TEST_DATA)
 	if err != nil {
 		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+
+	hashTable := make(md5Table)
+	for _, f := range files {
+		hash, file := getHash(f)
+		hashTable[hash] = append(hashTable[hash], file)
 	}
 
 	tmpFile, err := ioutil.TempFile(TEST_DATA, "temp_file_for_stdout_tests")
@@ -125,7 +131,7 @@ func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
 
 	stdout := os.Stdout
 	os.Stdout = tmpFile
-	showOutput(table)
+	showOutput(hashTable)
 
 	os.Stdout = stdout
 	data, err := os.ReadFile(tmpFile.Name())
