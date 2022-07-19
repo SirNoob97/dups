@@ -64,49 +64,49 @@ func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
 	}
 }
 
-// Test_GetHash_TowNonZeroLengthString_WhenFileExists ...
-func Test_GetHash_TowNonZeroLengthString_WhenFileExists(t *testing.T) {
-	hash, path := getHash(TEST_DATA + "/test_1")
+// Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists ...
+func Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists(t *testing.T) {
+	pair, err := getHash(TEST_DATA + "/test_1")
+	if err != nil {
+		t.Fatalf("Expected a 'nil' error, got %v", err)
+	}
 
-	if len(hash) == 0 && len(path) == 0 {
-		t.Fatal("Expected two string with non zero length")
+	if len(pair.hash) == 0 && len(pair.file) == 0 {
+		t.Fatal("Expected a md5 hash and a file path")
 	}
 }
 
-// Test_GetHash_TwoNonZeroLengthString_WhenFileIsAnEmptyFile ...
-func Test_GetHash_TwoNonZeroLengthString_WhenFileIsAnEmptyFile(t *testing.T) {
-	hash, path := getHash(EMPTY_FILE_PATH)
+// Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile ...
+func Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
+	pair, err := getHash(EMPTY_FILE_PATH)
+	if err != nil {
+		t.Fatalf("Expected a 'nil' error, got %v", err)
+	}
 
-	if len(hash) == 0 && len(path) == 0 {
-		t.Fatal("Expected two string with non zero length")
+	if len(pair.hash) == 0 && len(pair.file) == 0 {
+		t.Fatal("Expected a md5 hash and a file path")
 	}
 }
 
-// Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile ...
-func Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile(t *testing.T) {
-	hash, _ := getHash(EMPTY_FILE_PATH)
+// Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile ...
+func Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
+	pair, err := getHash(EMPTY_FILE_PATH)
 
-	if hash != EMPTY_FILE_MD5_HASH {
-		t.Fatalf("Expected %s md5 hash, got %s", EMPTY_FILE_MD5_HASH, hash)
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	if pair.hash != EMPTY_FILE_MD5_HASH {
+		t.Fatalf("Expected %s md5 hash, got %s", EMPTY_FILE_MD5_HASH, pair)
 	}
 }
 
-// Test_GetHash_LogErrors_WhenPathIsAnEmptyString ...
-func Test_GetHash_LogErrors_WhenPathIsAnEmptyString(t *testing.T) {
-	origLogFatal := logFatal
-	defer func() {
-		logFatal = origLogFatal
-	}()
+// Test_GetHash_NonNilError_WhenPathIsAnEmptyString ...
+func Test_GetHash_NonNilError_WhenPathIsAnEmptyString(t *testing.T) {
+	_, err := getHash("")
 
-	errors := []any{}
-	logFatal = func(a ...any) {
-		errors = append(errors, a)
-	}
-
-	getHash("")
-
-	if len(errors) == 0 {
-		t.Fatal("Expected errors to be logged")
+	if err == nil {
+		t.Fatal("Expected a non nil error")
 	}
 }
 
@@ -117,11 +117,13 @@ func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
 		t.Fatalf("Expected a nil error, got %v", err)
 	}
 
-
 	hashTable := make(md5Table)
 	for _, f := range files {
-		hash, file := getHash(f)
-		hashTable[hash] = append(hashTable[hash], file)
+		pair, err := getHash(f)
+		if err != nil {
+			t.Fatalf("Expected a nil error, got %v", err)
+		}
+		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
 	}
 
 	tmpFile, err := ioutil.TempFile(TEST_DATA, "temp_file_for_stdout_tests")
