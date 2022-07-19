@@ -14,6 +14,10 @@ var (
 	ignore   = []string{".git"}
 )
 
+type pair struct {
+	hash string
+	file string
+}
 type md5Table map[string][]string
 
 func isIgnored(dir string) bool {
@@ -25,10 +29,8 @@ func isIgnored(dir string) bool {
 	return false
 }
 
-// TODO: refactor this function, this function should only read a directory tree
-// TODO: extract hash operations
-func readTree(directory string) (md5Table, error) {
-	table := make(md5Table)
+func readTree(directory string) ([]string, error) {
+	files := []string{}
 	walk := func(path string, fInfo os.DirEntry, err error) error {
 		if err != nil && err != os.ErrNotExist {
 			return err
@@ -39,35 +41,34 @@ func readTree(directory string) (md5Table, error) {
 		}
 
 		if fInfo.Type().IsRegular() {
-			hash, file := getHash(path)
-			table[hash] = append(table[hash], file)
+			files = append(files, path)
 		}
 		return nil
 	}
 
-	return table, filepath.WalkDir(directory, walk)
+	return files, filepath.WalkDir(directory, walk)
 }
 
-// TODO: implement a better error handling
-func getHash(path string) (string, string) {
+func getHash(path string) (pair, error) {
 	file, err := os.Open(path)
 	if err != nil {
-		logFatal(err)
+		return pair{}, err
 	}
 	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		logFatal(err)
+		return pair{}, err
 	}
 
-	return fmt.Sprintf("%x", hash.Sum(nil)), path
+	ret := pair{
+		hash: fmt.Sprintf("%x", hash.Sum(nil)),
+		file: path,
+	}
+	return ret, nil
 }
 
 func showOutput(hashTable md5Table) {
-	if len(hashTable) == 0 {
-		logFatal("Hash table is empty")
-	}
 	for hash, files := range hashTable {
 		if len(files) > 1 {
 			fmt.Printf("Files that share the md5 hash: %s\n\n", hash)
@@ -85,8 +86,25 @@ func main() {
 		logFatal("Missing required parameter: '<path>'")
 	}
 
-	hashes, err := readTree(os.Args[1])
-	if err == nil {
-		showOutput(hashes)
+	files, err := readTree(os.Args[1])
+	if err != nil {
+		logFatal(err)
 	}
+
+	hashTable := make(md5Table)
+	for _, f := range files {
+		pair, err := getHash(f)
+		if err != nil {
+			logFatal(err)
+		}
+
+		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
+	}
+
+	if len(hashTable) == 0 {
+		fmt.Println("No duplicate files found.")
+	} else {
+		showOutput(hashTable)
+	}
+	os.Exit(0)
 }
