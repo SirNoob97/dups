@@ -9,7 +9,10 @@ import (
 	"path/filepath"
 )
 
-var ignore = []string{".git"}
+var (
+	logFatal = log.Fatal
+	ignore   = []string{".git"}
+)
 
 type md5Table map[string][]string
 
@@ -22,6 +25,8 @@ func isIgnored(dir string) bool {
 	return false
 }
 
+// TODO: refactor this function, this function should only read a directory tree
+// TODO: extract hash operations
 func readTree(directory string) (md5Table, error) {
 	table := make(md5Table)
 	walk := func(path string, fInfo os.DirEntry, err error) error {
@@ -43,22 +48,26 @@ func readTree(directory string) (md5Table, error) {
 	return table, filepath.WalkDir(directory, walk)
 }
 
+// TODO: implement a better error handling
 func getHash(path string) (string, string) {
 	file, err := os.Open(path)
 	if err != nil {
-		log.Fatal(err)
+		logFatal(err)
 	}
 	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		log.Fatal(err)
+		logFatal(err)
 	}
 
 	return fmt.Sprintf("%x", hash.Sum(nil)), path
 }
 
 func showOutput(hashTable md5Table) {
+	if len(hashTable) == 0 {
+		logFatal("Hash table is empty")
+	}
 	for hash, files := range hashTable {
 		if len(files) > 1 {
 			fmt.Printf("Files that share the md5 hash: %s\n\n", hash)
@@ -73,7 +82,7 @@ func showOutput(hashTable md5Table) {
 
 func main() {
 	if len(os.Args) < 2 {
-		log.Fatal("Missing required parameter: '<path>'")
+		logFatal("Missing required parameter: '<path>'")
 	}
 
 	hashes, err := readTree(os.Args[1])
