@@ -2,6 +2,8 @@ package main
 
 import (
 	"fmt"
+	"io/ioutil"
+	"os"
 	"testing"
 	"time"
 )
@@ -102,6 +104,58 @@ func Test_GetHash_LogErrors_WhenPathIsAnEmptyString(t *testing.T) {
 	}
 
 	getHash("")
+
+	if len(errors) == 0 {
+		t.Fatal("Expected errors to be logged")
+	}
+}
+
+// Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound ...
+func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
+	table, err := readTree(TEST_DATA)
+
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	tmpFile, err := ioutil.TempFile(TEST_DATA, "temp_file_for_stdout_tests")
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	stdout := os.Stdout
+	os.Stdout = tmpFile
+	showOutput(table)
+
+	os.Stdout = stdout
+	data, err := os.ReadFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	err = tmpFile.Close()
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	if len(data) == 0 {
+		t.Fatal("Expected a output message")
+	}
+}
+
+// Test_ShowOutput_LogError_WhenHashTableIsEmpty ...
+func Test_ShowOutput_LogError_WhenHashTableIsEmpty(t *testing.T) {
+	origLogFatal := logFatal
+	defer func() {
+		logFatal = origLogFatal
+	}()
+
+	errors := []any{}
+	logFatal = func(a ...any) {
+		errors = append(errors, a)
+	}
+
+	showOutput(make(md5Table))
 
 	if len(errors) == 0 {
 		t.Fatal("Expected errors to be logged")
