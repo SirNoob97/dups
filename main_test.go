@@ -151,19 +151,28 @@ func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
 
 // Test_ShowOutput_LogError_WhenHashTableIsEmpty ...
 func Test_ShowOutput_LogError_WhenHashTableIsEmpty(t *testing.T) {
-	origLogFatal := logFatal
-	defer func() {
-		logFatal = origLogFatal
-	}()
-
-	errors := []any{}
-	logFatal = func(a ...any) {
-		errors = append(errors, a)
+	hashTable := make(md5Table)
+	tmpFile, err := ioutil.TempFile(TEST_DATA, "temp_file_for_stdout_tests")
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
 	}
 
-	showOutput(make(md5Table))
+	stdout := os.Stdout
+	os.Stdout = tmpFile
+	showOutput(hashTable)
 
-	if len(errors) == 0 {
-		t.Fatal("Expected errors to be logged")
+	os.Stdout = stdout
+	data, err := os.ReadFile(tmpFile.Name())
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	err = tmpFile.Close()
+	if err != nil {
+		t.Fatalf("Expected a nil error, got %v", err)
+	}
+
+	if len(data) != 0 {
+		t.Fatal("Expected no output message")
 	}
 }
