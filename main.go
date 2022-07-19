@@ -25,10 +25,8 @@ func isIgnored(dir string) bool {
 	return false
 }
 
-// TODO: refactor this function, this function should only read a directory tree
-// TODO: extract hash operations
-func readTree(directory string) (md5Table, error) {
-	table := make(md5Table)
+func readTree(directory string) ([]string, error) {
+	files := []string{}
 	walk := func(path string, fInfo os.DirEntry, err error) error {
 		if err != nil && err != os.ErrNotExist {
 			return err
@@ -39,13 +37,12 @@ func readTree(directory string) (md5Table, error) {
 		}
 
 		if fInfo.Type().IsRegular() {
-			hash, file := getHash(path)
-			table[hash] = append(table[hash], file)
+			files = append(files, path)
 		}
 		return nil
 	}
 
-	return table, filepath.WalkDir(directory, walk)
+	return files, filepath.WalkDir(directory, walk)
 }
 
 // TODO: implement a better error handling
@@ -85,8 +82,16 @@ func main() {
 		logFatal("Missing required parameter: '<path>'")
 	}
 
-	hashes, err := readTree(os.Args[1])
-	if err == nil {
-		showOutput(hashes)
+	files, err := readTree(os.Args[1])
+	if err != nil {
+		logFatal(err)
 	}
+
+	hashTable := make(md5Table)
+	for _, f := range files {
+		hash, file := getHash(f)
+		hashTable[hash] = append(hashTable[hash], file)
+	}
+
+	showOutput(hashTable)
 }
