@@ -65,6 +65,9 @@ func getHash(path string) (string, string) {
 }
 
 func showOutput(hashTable md5Table) {
+	if len(hashTable) == 0 {
+		logFatal("Hash table is empty")
+	}
 	for hash, files := range hashTable {
 		if len(files) > 1 {
 			fmt.Printf("Files that share the md5 hash: %s\n\n", hash)
