@@ -14,9 +14,9 @@ var (
 	ignore   = []string{".git"}
 )
 
-type pair struct {
+type fileHash struct {
 	hash string
-	file string
+	path string
 }
 type md5Table map[string][]string
 
@@ -61,9 +61,9 @@ func getHash(path string) (pair, error) {
 		return pair{}, err
 	}
 
-	ret := pair{
+	ret := fileHash{
 		hash: fmt.Sprintf("%x", hash.Sum(nil)),
-		file: path,
+		path: path,
 	}
 	return ret, nil
 }
