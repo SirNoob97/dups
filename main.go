@@ -145,25 +145,12 @@ func main() {
 		logFatal("Missing required parameter: '<path>'")
 	}
 
-	files, err := readTree(os.Args[1])
-	if err != nil {
-		logFatal(err)
-	}
-
-	hashTable := make(md5Table)
-	for _, f := range files {
-		pair, err := getHash(f)
-		if err != nil {
-			logFatal(err)
-		}
-
-		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
-	}
-
-	if len(hashTable) == 0 {
+	table := run(os.Args[1])
+	if len(table) == 0 {
 		fmt.Println("No duplicate files found.")
 	} else {
-		showOutput(hashTable)
+		showOutput(table)
 	}
+
 	os.Exit(0)
 }
