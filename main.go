@@ -7,6 +7,8 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"runtime"
+	"sync"
 )
 
 var (
@@ -66,6 +68,39 @@ func getHash(path string) (pair, error) {
 		path: path,
 	}
 	return ret, nil
+}
+
+func run(directory string) md5Table {
+	workers := 2 * runtime.GOMAXPROCS(0)
+	paths := make(chan string)
+	fHash := make(chan fileHash)
+	done := make(chan bool)
+	table := make(chan md5Table)
+	wg := new(sync.WaitGroup)
+
+	for i := 0; i < workers; i++ {
+		go hashFile(paths, fHash, done)
+	}
+
+	go buildMd5Table(fHash, table)
+
+	wg.Add(1)
+
+	err := readTree(directory, paths, wg)
+	if err != nil {
+		logFatal(err)
+	}
+
+	wg.Wait()
+	close(paths)
+
+	for i := 0; i < workers; i++ {
+		<-done
+	}
+
+	close(fHash)
+
+	return <-table
 }
 
 func showOutput(hashTable md5Table) {
