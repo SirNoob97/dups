@@ -31,8 +31,8 @@ func isIgnored(dir string) bool {
 	return false
 }
 
-func readTree(directory string) ([]string, error) {
-	files := []string{}
+func readTree(directory string, paths chan string, wg *sync.WaitGroup) error {
+	defer wg.Done()
 	walk := func(path string, fInfo os.DirEntry, err error) error {
 		if err != nil && err != os.ErrNotExist {
 			return err
@@ -42,13 +42,20 @@ func readTree(directory string) ([]string, error) {
 			return filepath.SkipDir
 		}
 
-		if fInfo.Type().IsRegular() {
-			files = append(files, path)
+		if fInfo.Type().IsDir() && directory != path {
+			wg.Add(1)
+			go readTree(path, paths, wg)
+			return filepath.SkipDir
 		}
+
+		if fInfo.Type().IsRegular() {
+			paths <- path
+		}
+
 		return nil
 	}
 
-	return files, filepath.WalkDir(directory, walk)
+	return filepath.WalkDir(directory, walk)
 }
 
 func getHash(path string) (pair, error) {
