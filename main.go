@@ -58,7 +58,16 @@ func readTree(directory string, paths chan string, wg *sync.WaitGroup) error {
 	return filepath.WalkDir(directory, walk)
 }
 
-func getHash(path string) (pair, error) {
+func buildMd5Table(fHash chan fileHash, table chan md5Table) {
+	hashTable := make(md5Table)
+	for fh := range fHash {
+		hashTable[fh.hash] = append(hashTable[fh.hash], fh.path)
+	}
+
+	table <- hashTable
+}
+
+func getHash(path string) fileHash {
 	file, err := os.Open(path)
 	if err != nil {
 		return pair{}, err
