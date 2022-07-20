@@ -86,6 +86,14 @@ func getHash(path string) fileHash {
 	return ret
 }
 
+func hashFile(paths chan string, fHash chan fileHash, done chan bool) {
+	for p := range paths {
+		fHash <- getHash(p)
+
+	}
+	done <- true
+}
+
 func run(directory string) md5Table {
 	workers := 2 * runtime.GOMAXPROCS(0)
 	paths := make(chan string)
