@@ -7,6 +7,7 @@ import (
 	"log"
 	"os"
 	"path/filepath"
+	"sync"
 )
 
 var (
@@ -82,6 +83,8 @@ func showOutput(hashTable md5Table) {
 }
 
 func main() {
+	wg := &sync.WaitGroup{}
+	var mu sync.Mutex
 	if len(os.Args) < 2 {
 		logFatal("Missing required parameter: '<path>'")
 	}
@@ -93,14 +96,19 @@ func main() {
 
 	hashTable := make(md5Table)
 	for _, f := range files {
-		pair, err := getHash(f)
-		if err != nil {
-			logFatal(err)
-		}
-
-		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
+		wg.Add(1)
+		go func() {
+			defer wg.Done()
+			pair, err := getHash(f)
+			if err != nil {
+				logFatal(err)
+			}
+			mu.Lock()
+			defer mu.Unlock()
+			hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
+		}()
 	}
-
+	wg.Wait()
 	if len(hashTable) == 0 {
 		fmt.Println("No duplicate files found.")
 	} else {
