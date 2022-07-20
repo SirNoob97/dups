@@ -70,20 +70,20 @@ func buildMd5Table(fHash chan fileHash, table chan md5Table) {
 func getHash(path string) fileHash {
 	file, err := os.Open(path)
 	if err != nil {
-		return pair{}, err
+		logFatal(err)
 	}
 	defer file.Close()
 
 	hash := md5.New()
 	if _, err := io.Copy(hash, file); err != nil {
-		return pair{}, err
+		logFatal(err)
 	}
 
 	ret := fileHash{
 		hash: fmt.Sprintf("%x", hash.Sum(nil)),
 		path: path,
 	}
-	return ret, nil
+	return ret
 }
 
 func run(directory string) md5Table {
