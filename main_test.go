@@ -93,9 +93,18 @@ func Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
 
 // Test_GetHash_NonNilError_WhenPathIsAnEmptyString ...
 func Test_GetHash_NonNilError_WhenPathIsAnEmptyString(t *testing.T) {
-	_, err := getHash("")
+	errors := []any{}
 
-	if err == nil {
+	oriLogFata := logFatal
+	logFatal = func(v ...any) {
+		errors = append(errors, v)
+	}
+
+	getHash("")
+
+	logFatal = oriLogFata
+
+	if len(errors) == 0 {
 		t.Fatal("Expected a non nil error")
 	}
 }
