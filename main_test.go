@@ -66,38 +66,28 @@ func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
 
 // Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists ...
 func Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists(t *testing.T) {
-	pair, err := getHash(TEST_DATA + "/test_1")
-	if err != nil {
-		t.Fatalf("Expected a 'nil' error, got %v", err)
-	}
+	fHash := getHash(TEST_DATA + "/test_1")
 
-	if len(pair.hash) == 0 && len(pair.file) == 0 {
+	if len(fHash.hash) == 0 && len(fHash.path) == 0 {
 		t.Fatal("Expected a md5 hash and a file path")
 	}
 }
 
 // Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile ...
 func Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
-	pair, err := getHash(EMPTY_FILE_PATH)
-	if err != nil {
-		t.Fatalf("Expected a 'nil' error, got %v", err)
-	}
+	fHash := getHash(EMPTY_FILE_PATH)
 
-	if len(pair.hash) == 0 && len(pair.file) == 0 {
+	if len(fHash.hash) == 0 && len(fHash.path) == 0 {
 		t.Fatal("Expected a md5 hash and a file path")
 	}
 }
 
 // Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile ...
 func Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
-	pair, err := getHash(EMPTY_FILE_PATH)
+	fHash := getHash(EMPTY_FILE_PATH)
 
-	if err != nil {
-		t.Fatalf("Expected a nil error, got %v", err)
-	}
-
-	if pair.hash != EMPTY_FILE_MD5_HASH {
-		t.Fatalf("Expected %s md5 hash, got %s", EMPTY_FILE_MD5_HASH, pair)
+	if fHash.hash != EMPTY_FILE_MD5_HASH {
+		t.Fatalf("Expected %s md5 hash, got %s", EMPTY_FILE_MD5_HASH, fHash)
 	}
 }
 
@@ -119,11 +109,8 @@ func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
 
 	hashTable := make(md5Table)
 	for _, f := range files {
-		pair, err := getHash(f)
-		if err != nil {
-			t.Fatalf("Expected a nil error, got %v", err)
-		}
-		hashTable[pair.hash] = append(hashTable[pair.hash], pair.file)
+		fHash := getHash(f)
+		hashTable[fHash.hash] = append(hashTable[fHash.hash], fHash.path)
 	}
 
 	tmpFile, err := ioutil.TempFile(TEST_DATA, "temp_file_for_stdout_tests")
