@@ -31,7 +31,7 @@ func isIgnored(dir string) bool {
 	return false
 }
 
-func readTree(directory string, paths chan string, wg *sync.WaitGroup) error {
+func readTree(directory string, paths chan<- string, wg *sync.WaitGroup) error {
 	defer wg.Done()
 	walk := func(path string, fInfo os.DirEntry, err error) error {
 		if err != nil && err != os.ErrNotExist {
@@ -86,7 +86,7 @@ func getHash(path string) fileHash {
 	return ret
 }
 
-func hashFile(paths chan string, fHash chan fileHash, done chan bool) {
+func hashFile(paths <-chan string, fHash chan<- fileHash, done chan<- bool) {
 	for p := range paths {
 		fHash <- getHash(p)
 
