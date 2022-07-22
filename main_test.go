@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"os"
+	"runtime"
 	"sync"
 	"testing"
 	"time"
@@ -45,12 +46,31 @@ func Test_IsIgnore_False_WhenParameterIsEmpty(t *testing.T) {
 	}
 }
 
-// ERROR: paths is an empty channel, this provoke a deadlock
 // Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles ...
 func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *testing.T) {
+	workers := 2 * runtime.GOMAXPROCS(0)
 	paths := make(chan string)
 	wg := new(sync.WaitGroup)
+	fHash := make(chan fileHash)
+	done := make(chan bool)
+	table := make(chan md5Table)
+
+	for i := 0; i < workers; i++ {
+		go hashFile(paths, fHash, done)
+	}
+
+	go buildMd5Table(fHash, table)
+	wg.Add(1)
+
 	err := readTree(TEST_DATA, paths, wg)
+
+	wg.Wait()
+
+	close(paths)
+	for i := 0; i < workers; i++ {
+		<-done
+	}
+	close(done)
 
 	if err != nil {
 		t.Fatalf("Expected 'nil' got %v", err)
@@ -59,12 +79,32 @@ func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *
 
 // Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists ...
 func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
+	workers := 2 * runtime.GOMAXPROCS(0)
 	paths := make(chan string)
 	wg := new(sync.WaitGroup)
+	fHash := make(chan fileHash)
+	done := make(chan bool)
+	table := make(chan md5Table)
+
+	for i := 0; i < workers; i++ {
+		go hashFile(paths, fHash, done)
+	}
+
+	go buildMd5Table(fHash, table)
+	wg.Add(1)
+
 	err := readTree("", paths, wg)
 
+	wg.Wait()
+
+	close(paths)
+	for i := 0; i < workers; i++ {
+		<-done
+	}
+	close(done)
+
 	if err == nil {
-		t.Error("Expected a non 'nil' error")
+		t.Fatal("Expected a non 'nil' error")
 	}
 }
 
