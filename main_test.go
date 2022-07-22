@@ -79,29 +79,13 @@ func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *
 
 // Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists ...
 func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
-	workers := 2 * runtime.GOMAXPROCS(0)
 	paths := make(chan string)
 	wg := new(sync.WaitGroup)
-	fHash := make(chan fileHash)
-	done := make(chan bool)
-	table := make(chan md5Table)
-
-	for i := 0; i < workers; i++ {
-		go hashFile(paths, fHash, done)
-	}
-
-	go buildMd5Table(fHash, table)
 	wg.Add(1)
 
 	err := readTree("", paths, wg)
 
 	wg.Wait()
-
-	close(paths)
-	for i := 0; i < workers; i++ {
-		<-done
-	}
-	close(done)
 
 	if err == nil {
 		t.Fatal("Expected a non 'nil' error")
