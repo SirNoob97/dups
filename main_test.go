@@ -137,6 +137,33 @@ func Test_GetHash_NonNilError_WhenPathIsAnEmptyString(t *testing.T) {
 	}
 }
 
+// Test_Run_NonEmptyMd5Table_WhenDuplicateFilesAreFound ...
+func Test_Run_NonEmptyMd5Table_WhenDuplicateFilesAreFound(t *testing.T) {
+	table := run(TEST_DATA)
+
+	if len(table) == 0 {
+		t.Fatal("Expected a non empty md5Table")
+	}
+}
+
+// Test_Run_NonNilError_WhenRootDirectoryIsAnEmptyString ...
+func Test_Run_NonNilError_WhenRootDirectoryIsAnEmptyString(t *testing.T)  {
+	errors := []any{}
+
+	oriLogFata := logFatal
+	logFatal = func(v ...any) {
+		errors = append(errors, v)
+	}
+
+	run("")
+
+	logFatal = oriLogFata
+
+	if len(errors) == 0 {
+		t.Fatal("Expected a non nil error")
+	}
+}
+
 // Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound ...
 func Test_ShowOutput_PrintHashTable_WheDuplicateFilesAreFound(t *testing.T) {
 	hashTable := make(md5Table)
