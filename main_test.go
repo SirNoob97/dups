@@ -46,8 +46,8 @@ func Test_IsIgnore_False_WhenParameterIsEmpty(t *testing.T) {
 	}
 }
 
-// Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles ...
-func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *testing.T) {
+// Test_ReadTree_NilError_WhenTestDataDirectoryHasDuplicatedFiles ...
+func Test_ReadTree_NilError_WhenTestDataDirectoryHasDuplicatedFiles(t *testing.T) {
 	workers := 2 * runtime.GOMAXPROCS(0)
 	paths := make(chan string)
 	wg := new(sync.WaitGroup)
@@ -77,8 +77,8 @@ func Test_ReadTree_NonEmptyMapAndNil_WhenTestDataDirectoryHasDuplicatedFiles(t *
 	}
 }
 
-// Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists ...
-func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
+// Test_ReadTree_NonNilError_WhenDirectoryDoesntExists ...
+func Test_ReadTree_NonNilError_WhenDirectoryDoesntExists(t *testing.T) {
 	paths := make(chan string)
 	wg := new(sync.WaitGroup)
 	wg.Add(1)
@@ -92,8 +92,8 @@ func Test_ReadTree_EmptyMapAndNonNil_WhenDirectoryDoesntExists(t *testing.T) {
 	}
 }
 
-// Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists ...
-func Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists(t *testing.T) {
+// Test_GetHash_FileHashCopy_WhenFileExists ...
+func Test_GetHash_FileHashCopy_WhenFileExists(t *testing.T) {
 	fHash := getHash(TEST_DATA + "/test_1")
 
 	if len(fHash.hash) == 0 && len(fHash.path) == 0 {
@@ -101,8 +101,8 @@ func Test_GetHash_PairOfMD5HashWithTheFilePathAndNilError_WhenFileExists(t *test
 	}
 }
 
-// Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile ...
-func Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
+// Test_GetHash_EmptyFileHashCopy_WhenFileIsAnEmptyFile ...
+func Test_GetHash_EmptyFileHashCopy_WhenFileIsAnEmptyFile(t *testing.T) {
 	fHash := getHash(EMPTY_FILE_PATH)
 
 	if len(fHash.hash) == 0 && len(fHash.path) == 0 {
@@ -110,8 +110,8 @@ func Test_GetHash_PairOfMD5HashWithTheFileAndNilError_WhenFileIsAnEmptyFile(t *t
 	}
 }
 
-// Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile ...
-func Test_GetHash_EmptyFileHashAndNilError_WhenFileIsAnEmptyFile(t *testing.T) {
+// Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile ...
+func Test_GetHash_EmptyFileHash_WhenFileIsAnEmptyFile(t *testing.T) {
 	fHash := getHash(EMPTY_FILE_PATH)
 
 	if fHash.hash != EMPTY_FILE_MD5_HASH {
