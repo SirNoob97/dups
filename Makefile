@@ -18,7 +18,7 @@ all: build
 
 $(BUILD_DIR)/dups: clean-$(BUILD_DIR)
 > @mkdir -p $(@D)
->	@$(COMPILE) $@
+> @$(COMPILE) $@
 
 build: $(BUILD_DIR)/dups
 
@@ -31,6 +31,6 @@ clean-$(TEST_DATA_DIR):
 clean: clean-$(BUILD_DIR) clean-$(TEST_DATA_DIR)
 
 test: clean
-	@./test.sh
+> @./test.sh
 
 .PHONY: build test clean
