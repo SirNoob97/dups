@@ -13,6 +13,9 @@ COMPILE_OPTS=build -o
 COMPILE=$(COMPILER) $(COMPILE_OPTS)
 BUILD_DIR=bin
 TEST_DATA_DIR=testdata
+
+all: build
+
 test: clean
 	@./test.sh
 
