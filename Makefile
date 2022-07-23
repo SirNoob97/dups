@@ -16,6 +16,12 @@ TEST_DATA_DIR=testdata
 
 all: build
 
+$(BUILD_DIR)/dups: clean-$(BUILD_DIR)
+> @mkdir -p $(@D)
+>	@$(COMPILE) $@
+
+build: $(BUILD_DIR)/dups
+
 test: clean
 	@./test.sh
 
