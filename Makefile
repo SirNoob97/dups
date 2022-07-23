@@ -22,6 +22,14 @@ $(BUILD_DIR)/dups: clean-$(BUILD_DIR)
 
 build: $(BUILD_DIR)/dups
 
+clean-$(BUILD_DIR):
+> @rm -rf $(BUILD_DIR)
+
+clean-$(TEST_DATA_DIR):
+> @rm -rf $(TEST_DATA_DIR)
+
+clean: clean-$(BUILD_DIR) clean-$(TEST_DATA_DIR)
+
 test: clean
 	@./test.sh
 
