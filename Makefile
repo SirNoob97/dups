@@ -8,6 +8,8 @@ ifeq ($(origin .RECIPEPREFIX), undefined)
 endif
 .RECIPEPREFIX = >
 
+PREFIX=$${PREFIX:=$$HOME/.local/bin}
+
 COMPILER=go
 COMPILE_OPTS=build -o
 COMPILE=$(COMPILER) $(COMPILE_OPTS)
@@ -46,4 +48,9 @@ test: clean
 >
 > @go test -v ./...
 
-.PHONY: build test clean
+install:
+> @[ -x $(BUILD_DIR)/dups ] || $(MAKE) build
+> @mv $(BUILD_DIR)/dups $(PREFIX)
+> @$(MAKE) clean
+
+.PHONY: build install test clean
